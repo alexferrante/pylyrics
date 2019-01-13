@@ -1,3 +1,3 @@
 # pylyrics
 
-Generating a database based on the most popular music right now and using it to train a RNN lyric identification
+Dynamically generating a dataset based on the most popular music right now and using it to train a RNN to extract lyrics given audio
