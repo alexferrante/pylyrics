@@ -1,9 +1,12 @@
 import requests
 import re
 import pandas as pd
+import aeneas
+import os
 
 from urllib.parse import urljoin
 from bs4 import BeautifulSoup
+from aeneas.downloader import Downloader
 
 #Get the titles and artists of the top 400 songs on iTunes, generate database
 def get_top_songs():
@@ -55,7 +58,7 @@ def get_song_url(title, artist):
     soup = BeautifulSoup(response.text, "lxml")
    
     highest_views = 0
-    highest_href = ''
+    highest_href = ""
     for data in soup.find_all('div', class_='yt-lockup-content'): #iterate through all videos on the page, selecting the most relevant view wise
         if data.find('ol', class_='yt-lockup-playlist-items') is not None: #particular attribute of playlist items, which we dont want to look at
             pass
@@ -69,11 +72,12 @@ def get_song_url(title, artist):
             if count > highest_views:
                 highest_views = count 
                 highest_href = href
-    return "https://www.youtube.com/" + href
-
-#Use url to download audio 
+    url = "https://www.youtube.com" + highest_href
+    Downloader().audio_from_youtube(url,
+                                    download=True,
+                                    output_file_path=u'data/audio/'+title+'mp3'
+                                    )
 
 #to do: limit rate of requests (time.sleep) to a reasonable level so I dont get banned (import time, put 'time.sleep(requests p second)' in loop)
-#to do: use urls to get wav
-#to do: implement an automated strategy for forced alignment (aenas)
+#to do: implement map sync via aeneas for forced alignment
 #to do: update dataset accordingly with forced alignment structure (audio corresponds to text)
