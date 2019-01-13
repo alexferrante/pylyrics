@@ -7,8 +7,7 @@ aeneas,
 Beautiful Soup,
 Keras
 
-http://www.popvortex.com/music/charts/itunes-top-400-songs.php,
-Genius.com,
-Youtube.com
+
+Data: Genius, http://www.popvortex.com/music/charts/itunes-top-400-songs.php, YouTube
 
  
