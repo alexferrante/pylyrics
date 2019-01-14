@@ -18,8 +18,9 @@ def get_top_songs():
         song_data = table_body.find_all('tr')
         rows_list = []
         for songs in song_data:
-            title = songs.contents[1].text.strip()
-            artist = songs.contents[3].text.strip()
+            title = re.sub(r'[-\"\'#&/@;:<>{}`+=~|.,]', '', songs.contents[1].text.strip())
+            title = re.sub(r'\(.*?\)', '', title)
+            artist = re.sub(r'[-()\"\'#&/@;:<>{}`+=~|.,]', '', songs.contents[3].text.strip())
             lyrics = get_lyrics_page(title, artist)
             f = open('data/text/'+title+'.txt', 'w+')
             f.write(lyrics)
@@ -35,22 +36,30 @@ def get_top_songs():
 def get_lyrics_page(title, artist):
     BASE_URL = "http://genius.com"
     #create url using regex 
+    #to do: jesus, condense later please 
     build_url = artist + ' ' + title
-    build_url = re.sub(r'[-()\"#&/@;:<>{}`+=~|.!?,]', '', build_url)
     build_url = build_url.replace('  ', ' ')
     build_url = build_url.replace(' ', '-')
     build_url = BASE_URL + '/' + build_url + '-lyrics'
-    #scrape lyrics from web page
     try:
+        #scrape lyrics from web page
         lyrics = scrape_lyrics(build_url)
     except Exception as e:
         print('Error fetching page, does not exist. Attempting to search manually...') #dealing with javascript-rendered content is more complicated, reproduce AJAX calls and parse JSON 
         try:
-            build_url = BASE_URL + "/api/search/multi?per_page=5&q=" + title.split(None, 1)[0] + "+" + artist.split(None, 1)[0]
+            #limit word count, not character count (too ambiguous) THEN replace all spaces with + for both title and artist
+            if len(artist.split()) > 2: 
+                artist = ' '.join(artist.split()[:2])
+            if len(title.split()) > 3: 
+                title =  ' '.join(title.split()[:3])
+            artist = re.sub("\s+", "+", artist.strip())
+            title = re.sub("\s+", "+", title.strip())
+            build_url = BASE_URL + "/api/search/multi?per_page=5&q=" + artist + "+" + title
+            print(build_url)
             response = requests.get(build_url, headers={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36'})
             soup = BeautifulSoup(response.text, "lxml")
             json_data = json.loads(soup.find('p').text.strip())
-            lyrics = scrape_lyrics(BASE_URL + json_data["response"]["sections"][0]["hits"][0]["result"]["path"]) 
+            lyrics = scrape_lyrics(BASE_URL + json_data["response"]["sections"][0]["hits"][0]["result"]["path"])
         except Exception as e:
             print('Error fetching lyrics, cannot locate' + e)
     return lyrics
@@ -60,8 +69,8 @@ def scrape_lyrics(url):
     response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36'})
     soup = BeautifulSoup(response.text, "lxml")
     lyrics = soup.find('div', class_='lyrics').text.strip()
-    lyrics = re.sub(r'\[[^()]*\]', '', lyrics) #remove brackets and their contents, possibility of using bracketed labels as classifiers in the future
-    return lyrics  
+    lyrics = re.sub(r'\[[^()]*\]', '', lyrics) #remove brackets and their contents, possibility of using bracketed labels as classifiers
+    return lyrics   #to do: possibly write lyrics to text here
 
 #Use the title and artist names to get link to audio 
 def get_song_url(title, artist):
