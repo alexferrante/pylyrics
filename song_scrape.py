@@ -57,19 +57,22 @@ def get_lyrics_page(title, artist):
         except Exception as e:
             print('Error fetching lyrics, cannot locate')
 
+#Retrieve lyrics from Genius page and write to a .txt file
 def scrape_lyrics(url, title):
     try:
         response = requests.get(url, headers=HEADER)
-        soup = BeautifulSoup(response.text, "lxml")
-        lyrics = soup.find('div', class_='lyrics').get_text()
-        lyrics = re.sub(r'\[[^()]*\]', '', lyrics) #remove brackets and their contents, possibility of using bracketed labels as classifiers
+        soup = BeautifulSoup(response.text, 'lxml')
+        lyrics_container = soup.find('div', class_='lyrics')
         io = open('data/text/'+title+'.txt', 'w+')
-        print(url)
-        print(lyrics)
-        io.write(lyrics)
-        io.close()
+        for i in lyrics_container.contents:
+            try: 
+                lyrics = re.sub(r'\[[^()]*\]', '', i.get_text()) #remove brackets and their contents
+                io.write(lyrics)
+            except Exception as e:
+                pass #this is OK, exceptions are thrown by tags we don't care about
     except Exception as e:
         print('Error retrieving and writing lyrics')
+    io.close()
 
 #Use the title and artist names to get link to audio 
 def get_song_url(title, artist):
