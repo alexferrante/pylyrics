@@ -9,3 +9,5 @@ CMUDictionary (translate lyrics to phonemes for training),
 Keras (recurrent neural network) 
 
 Data sources: Genius, http://www.popvortex.com/music/charts/itunes-top-400-songs.php, YouTube
+
+Training: https://sites.google.com/site/unvoicedsoundseparation/mir-1k
