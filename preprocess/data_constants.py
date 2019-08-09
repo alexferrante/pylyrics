@@ -1,4 +1,4 @@
-class data_constants:
+class pre_data_constants:
   BATCH_SIZE = 8
   MAX_TIME = 4
   NCEPS = 40
@@ -14,7 +14,9 @@ class data_constants:
   BOUNDARY = None
   PADDED = False
   eps = 0.001
+  SIGNAL = 32767.0
+  HZMEL = 1127.01048
 
-class data_constants:
+class post_data_constants:
   DENOISE_FACTOR = 5  
   GRIFFIN_LIM_ITE = 277
