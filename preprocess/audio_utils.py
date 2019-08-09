@@ -39,7 +39,7 @@ def get_m_filterbank(min_freq, max_freq, m_bin_count, lin_bin_count, sample_rate
 
     lin_bin_indices = np.array([hz_to_fft_bin(freqs, sample_rate, lin_bin_count) for freqs in lin_freq])
     filterbank = np.zeros((m_bin_count, lin_bin_count))
-    
+
     for m_bin in range(m_bin_count):
         linear_bin_freq = lin_bin_indices[m_bin]
         if linear_bin_freq > 1:
@@ -62,3 +62,38 @@ def get_m_filterbank(min_freq, max_freq, m_bin_count, lin_bin_count, sample_rate
                     filterbank[m_bin, f_bin] = res
         filterbank[m_bin, linear_bin_freq] = 1.0
     return filterbank
+
+def get_stft(x, fft_size, n_hops_samples):
+    window = np.hanning(fft_size)
+    fft_size = int(fft_size)
+    n_hops_samples = int(n_hops_samples)
+    return np.array([np.fft.rfft(window*x[i:i+fft_size])
+                    for i in range(0, len(x)-fft_size, n_hops_samples)])
+
+def get_istft(x, fft_size, n_hops_samples):
+    fft_size = int(fft_size)
+    n_hops_samples = int(n_hops_samples)
+    window = np.hanning(fft_size)
+    time_slices = x.shape[0]
+    size_samples = int(time_slices*n_hops_samples + fft_size)
+    res = np.zeros(size_samples)
+    for n,i in enumerate(range(0, len(res)-fft_size, n_hops_samples)):
+        res[i:i+fft_size] += window*np.real(np.fft.irfft(x[n]))
+    return res
+
+def get_signal_griffin_lim(mag_spec, fft_size, n_hops_samples, iter):
+    time_slices = mag_spec.shape[0]
+    size_samples = int(time_slices*n_hops_samples + fft_size)
+    x_restruc = np.random.randn(size_samples)
+    n = iter
+    while n > 0:
+        n -= 1
+        restruc_spec = get_stft(x_restruc, fft_size, n_hops_samples)
+        restruc_ang = np.angle(restruc_spec)
+        prop_spec = mag_spec*np.exp(1.0j*restruc_ang)
+        prev_x = x_reconstruct
+        x_restruc = get_istft(prop_spec, fft_size, n_hops_samples)
+        diff = np.sqrt(sum((x_restruc - prev_x)**2)/x_restruc.size)
+    return x_restruc
+
+
