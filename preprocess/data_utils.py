@@ -9,17 +9,6 @@ from scipy.fftpack import fft, dct, idct
 from scipy.optimize import linprog
 from scipy.linalg import lstsq
 
-import numpy as np
-import wave
-import array
-import librosa.feature as lib
-
-from scipy.io import wavfile
-from scipy.signal import lfilter, hamming, stft, istft, check_COLA
-from scipy.fftpack import fft, dct, idct
-from scipy.optimize import linprog
-from scipy.linalg import lstsq
-
 from .data_constants import *
 from .audio_utils import get_signal_griffin_lim
 
@@ -208,7 +197,7 @@ def slice_samples(samples, w_len, w_shift):
 def euc_distance(a, b):
   return np.linalg.norm(a-b)
 
-def dyn_time_warp(x, y, dist=euclidean_distance):
+def dyn_time_warp(x, y, dist=euc_distance):
   LD = distance_matrix(y, x)
   AD = np.zeros_like(LD)
   AD[0, 0] = LD[0, 0]
