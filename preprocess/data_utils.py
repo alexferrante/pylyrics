@@ -3,7 +3,6 @@ import wave
 import array
 import librosa.feature as lib
 
-from scipy.io import wavfile
 from scipy.signal import lfilter, hamming, stft, istft, check_COLA
 from scipy.fftpack import fft, dct, idct
 from scipy.optimize import linprog
@@ -51,7 +50,7 @@ def mcep_to_wav(logmcep, m_weights):
                                post_data_constants.GRIFFIN_LIM_ITE)
   assert not np.isnan(wav).any()
   sample_max = np.max(abs(wav))
-  if sample_max > 1.0
+  if sample_max > 1.0:
     wav = wav / sample_max
   return wav
 
